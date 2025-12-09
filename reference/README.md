@@ -106,7 +106,6 @@ my_project/
 ├── .automaker/feature_list.json         # Test cases (source of truth)
 ├── app_spec.txt              # Copied specification
 ├── init.sh                   # Environment setup script
-├── claude-progress.txt       # Session progress notes
 ├── .claude_settings.json     # Security settings
 └── [application files]       # Generated application code
 ```

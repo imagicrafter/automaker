@@ -4,8 +4,7 @@
     "category": "Kanban",
     "description": "Remove drag icon from cards when in in progress or verified.  also add a timer that tracks how long it has been since the agent started, a count up timer basically formatted 00:00",
     "steps": [],
-    "status": "in_progress",
-    "startedAt": "2025-12-09T07:08:26.822Z"
+    "status": "in_progress"
   },
   {
     "id": "feature-1765261027396-b78maajg7",
@@ -19,24 +18,21 @@
     "category": "Context",
     "description": "Add Context File should show a file name and a textarea for the context info, that text area should allow drag n drop for txt files and .md files which the system will parse and put into the text area",
     "steps": [],
-    "status": "in_progress",
-    "startedAt": "2025-12-09T07:04:29.353Z"
+    "status": "in_progress"
   },
   {
     "id": "feature-1765262348401-hivjg6vuq",
     "category": "Kanban",
     "description": "Make in progress column  double width so that the cards display 2 columns masonry layout",
     "steps": [],
-    "status": "in_progress",
-    "startedAt": "2025-12-09T07:04:18.731Z"
+    "status": "in_progress"
   },
   {
     "id": "feature-1765262430461-vennhg2b5",
     "category": "Core",
     "description": "When the electron ui refreshes, it often redirects me back to the overview, remeber my last route and restore on app load",
     "steps": [],
-    "status": "in_progress",
-    "startedAt": "2025-12-09T07:04:14.040Z"
+    "status": "in_progress"
   },
   {
     "id": "feature-1765263521367-vse4n57j8",
@@ -50,15 +46,13 @@
     "category": "Core",
     "description": "When opening a new project, verify the .automaker directory is created with necessary files and kick off an agent to analyze the project, refactor the app_spec to describe the project and it's tech stack, and any features currently implemented, also define a blank feature_list.json, create necessary context and agents-context directories, and coding_prompt.md.",
     "steps": [],
-    "status": "in_progress",
-    "startedAt": "2025-12-09T07:09:12.619Z"
+    "status": "in_progress"
   },
   {
     "id": "feature-1765263831805-mr6mduv8p",
     "category": "Core",
     "description": "remove claude-progress from anywhere in code or prompts as it's no longer needed",
     "steps": [],
-    "status": "in_progress",
-    "startedAt": "2025-12-09T07:09:11.202Z"
+    "status": "verified"
   }
 ]

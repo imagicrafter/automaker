@@ -20,16 +20,13 @@ cat app_spec.txt
 # 4. Read the feature list to see all work
 cat .automaker/feature_list.json | head -50
 
-# 5. Read progress notes from previous sessions
-cat claude-progress.txt
-
-# 6. Read the memory file - lessons learned from previous agents
+# 5. Read the memory file - lessons learned from previous agents
 cat .automaker/memory.md
 
-# 7. Check recent git history
+# 6. Check recent git history
 git log --oneline -20
 
-# 8. Count remaining features
+# 7. Count remaining features
 cat .automaker/feature_list.json | grep -E '"status": "(backlog|in_progress)"' | wc -l
 ```
 
@@ -40,7 +37,7 @@ for the application you're building.
 
 ### STEP 1.5: LOAD PROJECT CONTEXT (MANDATORY)
 
-The `.automaker/context/` directory contains additional context files that provide important information for development. Always load these files to understand:
+The `.automaker/context/` directory contains user-provided context files that provide important information for development. Always load these files to understand:
 - Design guidelines and requirements
 - API documentation
 - Reference implementations
@@ -62,6 +59,8 @@ done
 ```
 
 **Note:** Image files (.png, .jpg, etc.) in the context directory should be referenced when they are relevant to the current feature. Use them as visual references for UI implementation.
+
+**Agent Context:** Your working context and progress for each feature is automatically saved to `.automaker/agents-context/${featureId}.md`. This is loaded automatically when resuming features - you don't need to manually load these files.
 
 ### STEP 2: START SERVERS (IF NOT RUNNING)
 
@@ -238,25 +237,14 @@ git commit -m "Implement [feature name] - verified and cleaned up
 git push origin main
 ```
 
-### STEP 9: UPDATE PROGRESS NOTES
-
-Update `claude-progress.txt` with:
-
-- What you accomplished this session
-- Which test(s) you completed
-- Any issues discovered or fixed
-- What should be worked on next
-- Current completion status (e.g., "45/200 features verified")
-
-### STEP 10: END SESSION CLEANLY
+### STEP 9: END SESSION CLEANLY
 
 Before context fills up:
 
 1. Commit all working code
-2. Update claude-progress.txt
-3. Update .automaker/feature_list.json if tests verified
-4. Ensure no uncommitted changes
-5. Leave app in working state (no broken features)
+2. Update .automaker/feature_list.json if tests verified
+3. Ensure no uncommitted changes
+4. Leave app in working state (no broken features)
 
 ---
 

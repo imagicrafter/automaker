@@ -99,9 +99,8 @@ the highest-priority features from .automaker/feature_list.json. Remember:
 Before your context fills up:
 
 1. Commit all work with descriptive messages
-2. Create `claude-progress.txt` with a summary of what you accomplished
-3. Ensure .automaker/feature_list.json is complete and saved
-4. Leave the environment in a clean, working state
+2. Ensure .automaker/feature_list.json is complete and saved
+3. Leave the environment in a clean, working state
 
 The next agent will continue from here with a fresh context window.
 

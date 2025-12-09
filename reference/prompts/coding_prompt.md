@@ -20,13 +20,10 @@ cat app_spec.txt
 # 4. Read the feature list to see all work
 cat .automaker/feature_list.json | head -50
 
-# 5. Read progress notes from previous sessions
-cat claude-progress.txt
-
-# 6. Check recent git history
+# 5. Check recent git history
 git log --oneline -20
 
-# 7. Count remaining tests
+# 6. Count remaining tests
 cat .automaker/feature_list.json | grep '"passes": false' | wc -l
 ```
 
@@ -201,25 +198,14 @@ git commit -m "Implement [feature name] - verified and cleaned up
 git push origin main
 ```
 
-### STEP 9: UPDATE PROGRESS NOTES
-
-Update `claude-progress.txt` with:
-
-- What you accomplished this session
-- Which test(s) you completed
-- Any issues discovered or fixed
-- What should be worked on next
-- Current completion status (e.g., "45/200 tests passing")
-
-### STEP 10: END SESSION CLEANLY
+### STEP 9: END SESSION CLEANLY
 
 Before context fills up:
 
 1. Commit all working code
-2. Update claude-progress.txt
-3. Update .automaker/feature_list.json if tests verified
-4. Ensure no uncommitted changes
-5. Leave app in working state (no broken features)
+2. Update .automaker/feature_list.json if tests verified
+3. Ensure no uncommitted changes
+4. Leave app in working state (no broken features)
 
 ---
 
