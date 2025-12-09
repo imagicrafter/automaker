@@ -24,6 +24,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { SessionListItem } from "@/types/electron";
+import { ACTION_SHORTCUTS } from "@/hooks/use-keyboard-shortcuts";
 
 // Random session name generator
 const adjectives = [
@@ -50,6 +51,7 @@ interface SessionManagerProps {
   onSelectSession: (sessionId: string | null) => void;
   projectPath: string;
   isCurrentSessionThinking?: boolean;
+  onQuickCreateRef?: React.MutableRefObject<(() => Promise<void>) | null>;
 }
 
 export function SessionManager({
@@ -57,6 +59,7 @@ export function SessionManager({
   onSelectSession,
   projectPath,
   isCurrentSessionThinking = false,
+  onQuickCreateRef,
 }: SessionManagerProps) {
   const [sessions, setSessions] = useState<SessionListItem[]>([]);
   const [activeTab, setActiveTab] = useState<"active" | "archived">("active");
@@ -117,6 +120,18 @@ export function SessionManager({
       onSelectSession(result.sessionId);
     }
   };
+
+  // Expose the quick create function via ref for keyboard shortcuts
+  useEffect(() => {
+    if (onQuickCreateRef) {
+      onQuickCreateRef.current = handleQuickCreateSession;
+    }
+    return () => {
+      if (onQuickCreateRef) {
+        onQuickCreateRef.current = null;
+      }
+    };
+  }, [onQuickCreateRef, projectPath]);
 
   // Rename session
   const handleRenameSession = async (sessionId: string) => {
@@ -192,9 +207,13 @@ export function SessionManager({
               size="sm"
               onClick={handleQuickCreateSession}
               data-testid="new-session-button"
+              title={`New Session (${ACTION_SHORTCUTS.newSession})`}
             >
               <Plus className="w-4 h-4 mr-1" />
               New
+              <span className="ml-1.5 px-1.5 py-0.5 text-[10px] font-mono rounded bg-white/20 text-white/80">
+                {ACTION_SHORTCUTS.newSession}
+              </span>
             </Button>
           )}
         </div>

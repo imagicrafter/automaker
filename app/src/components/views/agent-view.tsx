@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback, useRef, useEffect } from "react";
+import { useState, useCallback, useRef, useEffect, useMemo } from "react";
 import { useAppStore } from "@/store/app-store";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,6 +23,11 @@ import { cn } from "@/lib/utils";
 import { useElectronAgent } from "@/hooks/use-electron-agent";
 import { SessionManager } from "@/components/session-manager";
 import type { ImageAttachment } from "@/store/app-store";
+import {
+  useKeyboardShortcuts,
+  ACTION_SHORTCUTS,
+  KeyboardShortcut,
+} from "@/hooks/use-keyboard-shortcuts";
 
 export function AgentView() {
   const { currentProject } = useAppStore();
@@ -40,6 +45,9 @@ export function AgentView() {
 
   // Input ref for auto-focus
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Ref for quick create session function from SessionManager
+  const quickCreateSessionRef = useRef<(() => Promise<void>) | null>(null);
 
   // Use the Electron agent hook (only if we have a session)
   const {
@@ -369,6 +377,29 @@ export function AgentView() {
     }
   }, [currentSessionId]);
 
+  // Keyboard shortcuts for agent view
+  const agentShortcuts: KeyboardShortcut[] = useMemo(() => {
+    const shortcuts: KeyboardShortcut[] = [];
+
+    // New session shortcut - only when in agent view with a project
+    if (currentProject) {
+      shortcuts.push({
+        key: ACTION_SHORTCUTS.newSession,
+        action: () => {
+          if (quickCreateSessionRef.current) {
+            quickCreateSessionRef.current();
+          }
+        },
+        description: "Create new session",
+      });
+    }
+
+    return shortcuts;
+  }, [currentProject]);
+
+  // Register keyboard shortcuts
+  useKeyboardShortcuts(agentShortcuts);
+
   if (!currentProject) {
     return (
       <div
@@ -413,6 +444,7 @@ export function AgentView() {
             onSelectSession={setCurrentSessionId}
             projectPath={currentProject.path}
             isCurrentSessionThinking={isProcessing}
+            onQuickCreateRef={quickCreateSessionRef}
           />
         </div>
       )}

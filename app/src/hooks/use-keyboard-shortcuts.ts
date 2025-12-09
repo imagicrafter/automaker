@@ -101,9 +101,19 @@ export const NAV_SHORTCUTS: Record<string, string> = {
 };
 
 /**
+ * Shortcut definitions for UI controls
+ */
+export const UI_SHORTCUTS: Record<string, string> = {
+  toggleSidebar: "`", // Backtick to toggle sidebar
+};
+
+/**
  * Shortcut definitions for add buttons
  */
 export const ACTION_SHORTCUTS: Record<string, string> = {
   addFeature: "N", // N for New feature
   addContextFile: "F", // F for File (add context file)
+  startNext: "Q", // Q for Queue (start next features from backlog)
+  newSession: "W", // W for new session (in agent view)
+  openProject: "O", // O for Open project (navigate to welcome view)
 };
