@@ -33,10 +33,10 @@ import { ApiKeysSection } from "./settings-view/api-keys/api-keys-section";
 import { ClaudeCliStatus } from "./settings-view/cli-status/claude-cli-status";
 import { CodexCliStatus } from "./settings-view/cli-status/codex-cli-status";
 import { AppearanceSection } from "./settings-view/appearance/appearance-section";
-import { KanbanDisplaySection } from "./settings-view/kanban-display-section";
-import { KeyboardShortcutsSection } from "./settings-view/keyboard-shortcuts-section";
-import { FeatureDefaultsSection } from "./settings-view/feature-defaults-section";
-import { DangerZoneSection } from "./settings-view/danger-zone-section";
+import { KanbanDisplaySection } from "./settings-view/kanban-display/kanban-display-section";
+import { KeyboardShortcutsSection } from "./settings-view/keyboard-shortcuts/keyboard-shortcuts-section";
+import { FeatureDefaultsSection } from "./settings-view/feature-defaults/feature-defaults-section";
+import { DangerZoneSection } from "./settings-view/danger-zone/danger-zone-section";
 
 // Navigation items for the side panel
 const NAV_ITEMS = [
