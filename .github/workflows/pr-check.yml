@@ -24,6 +24,9 @@ jobs:
           cache: "npm"
           cache-dependency-path: package-lock.json
 
+      - name: Check for SSH URLs in lockfile
+        run: npm run lint:lockfile
+
       - name: Configure Git for HTTPS
         # Convert SSH URLs to HTTPS for git dependencies (e.g., @electron/node-gyp)
         # This is needed because SSH authentication isn't available in CI
