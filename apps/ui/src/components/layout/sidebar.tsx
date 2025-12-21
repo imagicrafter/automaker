@@ -3,13 +3,9 @@ import { useNavigate, useLocation } from '@tanstack/react-router';
 import { cn } from '@/lib/utils';
 import { useAppStore, formatShortcut, type ThemeMode } from '@/store/app-store';
 import {
-  FolderOpen,
-  Plus,
   Settings,
   Folder,
   X,
-  PanelLeft,
-  PanelLeftClose,
   ChevronDown,
   Redo2,
   Check,
@@ -21,9 +17,7 @@ import {
   Palette,
   Monitor,
   Search,
-  Bug,
   Activity,
-  Recycle,
   Sparkles,
   Loader2,
   Rocket,
@@ -75,6 +69,9 @@ import {
   ThemeMenuItem,
   BugReportButton,
   CollapseToggleButton,
+  SidebarHeader,
+  ProjectActions,
+  SidebarNavigation,
 } from './sidebar/components';
 import {
   PROJECT_DARK_THEMES,
@@ -678,204 +675,21 @@ export function Sidebar() {
       />
 
       <div className="flex-1 flex flex-col overflow-hidden">
-        {/* Logo */}
-        <div
-          className={cn(
-            'h-20 shrink-0 titlebar-drag-region',
-            // Subtle bottom border with gradient fade
-            'border-b border-border/40',
-            // Background gradient for depth
-            'bg-gradient-to-b from-transparent to-background/5',
-            'flex items-center',
-            sidebarOpen ? 'px-3 lg:px-5 justify-start' : 'px-3 justify-center'
-          )}
-        >
-          <div
-            className={cn(
-              'flex items-center gap-3 titlebar-no-drag cursor-pointer group',
-              !sidebarOpen && 'flex-col gap-1'
-            )}
-            onClick={() => navigate({ to: '/' })}
-            data-testid="logo-button"
-          >
-            {!sidebarOpen ? (
-              <div className="relative flex items-center justify-center rounded-lg">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 256 256"
-                  role="img"
-                  aria-label="Automaker Logo"
-                  className="size-8 group-hover:rotate-12 transition-transform duration-300 ease-out"
-                >
-                  <defs>
-                    <linearGradient
-                      id="bg-collapsed"
-                      x1="0"
-                      y1="0"
-                      x2="256"
-                      y2="256"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop offset="0%" style={{ stopColor: 'var(--brand-400)' }} />
-                      <stop offset="100%" style={{ stopColor: 'var(--brand-600)' }} />
-                    </linearGradient>
-                    <filter id="iconShadow-collapsed" x="-20%" y="-20%" width="140%" height="140%">
-                      <feDropShadow
-                        dx="0"
-                        dy="4"
-                        stdDeviation="4"
-                        floodColor="#000000"
-                        floodOpacity="0.25"
-                      />
-                    </filter>
-                  </defs>
-                  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#bg-collapsed)" />
-                  <g
-                    fill="none"
-                    stroke="#FFFFFF"
-                    strokeWidth="20"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    filter="url(#iconShadow-collapsed)"
-                  >
-                    <path d="M92 92 L52 128 L92 164" />
-                    <path d="M144 72 L116 184" />
-                    <path d="M164 92 L204 128 L164 164" />
-                  </g>
-                </svg>
-              </div>
-            ) : (
-              <div className={cn('flex items-center gap-1', 'hidden lg:flex')}>
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  viewBox="0 0 256 256"
-                  role="img"
-                  aria-label="automaker"
-                  className="h-[36.8px] w-[36.8px] group-hover:rotate-12 transition-transform duration-300 ease-out"
-                >
-                  <defs>
-                    <linearGradient
-                      id="bg-expanded"
-                      x1="0"
-                      y1="0"
-                      x2="256"
-                      y2="256"
-                      gradientUnits="userSpaceOnUse"
-                    >
-                      <stop offset="0%" style={{ stopColor: 'var(--brand-400)' }} />
-                      <stop offset="100%" style={{ stopColor: 'var(--brand-600)' }} />
-                    </linearGradient>
-                    <filter id="iconShadow-expanded" x="-20%" y="-20%" width="140%" height="140%">
-                      <feDropShadow
-                        dx="0"
-                        dy="4"
-                        stdDeviation="4"
-                        floodColor="#000000"
-                        floodOpacity="0.25"
-                      />
-                    </filter>
-                  </defs>
-                  <rect x="16" y="16" width="224" height="224" rx="56" fill="url(#bg-expanded)" />
-                  <g
-                    fill="none"
-                    stroke="#FFFFFF"
-                    strokeWidth="20"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    filter="url(#iconShadow-expanded)"
-                  >
-                    <path d="M92 92 L52 128 L92 164" />
-                    <path d="M144 72 L116 184" />
-                    <path d="M164 92 L204 128 L164 164" />
-                  </g>
-                </svg>
-                <span className="font-bold text-foreground text-[1.7rem] tracking-tight leading-none translate-y-[-2px]">
-                  automaker<span className="text-brand-500">.</span>
-                </span>
-              </div>
-            )}
-          </div>
-          {/* Bug Report Button - Inside logo container when expanded */}
-          {sidebarOpen && <BugReportButton sidebarExpanded onClick={handleBugReportClick} />}
-        </div>
-
-        {/* Bug Report Button - Collapsed sidebar version */}
-        {!sidebarOpen && (
-          <div className="px-3 mt-1.5 flex justify-center">
-            <BugReportButton sidebarExpanded={false} onClick={handleBugReportClick} />
-          </div>
-        )}
+        <SidebarHeader
+          sidebarOpen={sidebarOpen}
+          navigate={navigate}
+          handleBugReportClick={handleBugReportClick}
+        />
 
         {/* Project Actions - Moved above project selector */}
         {sidebarOpen && (
-          <div className="flex items-center gap-2.5 titlebar-no-drag px-3 mt-5">
-            <button
-              onClick={() => setShowNewProjectModal(true)}
-              className={cn(
-                'group flex items-center justify-center flex-1 px-3 py-2.5 rounded-xl',
-                'relative overflow-hidden',
-                'text-muted-foreground hover:text-foreground',
-                // Glass background with gradient on hover
-                'bg-accent/20 hover:bg-gradient-to-br hover:from-brand-500/15 hover:to-brand-600/10',
-                'border border-border/40 hover:border-brand-500/30',
-                // Premium shadow
-                'shadow-sm hover:shadow-md hover:shadow-brand-500/5',
-                'transition-all duration-200 ease-out',
-                'hover:scale-[1.02] active:scale-[0.97]'
-              )}
-              title="New Project"
-              data-testid="new-project-button"
-            >
-              <Plus className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:rotate-90 group-hover:text-brand-500" />
-              <span className="ml-2 text-sm font-medium hidden lg:block whitespace-nowrap">
-                New
-              </span>
-            </button>
-            <button
-              onClick={handleOpenFolder}
-              className={cn(
-                'group flex items-center justify-center flex-1 px-3 py-2.5 rounded-xl',
-                'relative overflow-hidden',
-                'text-muted-foreground hover:text-foreground',
-                // Glass background
-                'bg-accent/20 hover:bg-accent/40',
-                'border border-border/40 hover:border-border/60',
-                'shadow-sm hover:shadow-md',
-                'transition-all duration-200 ease-out',
-                'hover:scale-[1.02] active:scale-[0.97]'
-              )}
-              title={`Open Folder (${shortcuts.openProject})`}
-              data-testid="open-project-button"
-            >
-              <FolderOpen className="w-4 h-4 shrink-0 transition-transform duration-200 group-hover:scale-110" />
-              <span className="hidden lg:flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-mono rounded-md bg-muted/80 text-muted-foreground ml-2">
-                {formatShortcut(shortcuts.openProject, true)}
-              </span>
-            </button>
-            <button
-              onClick={() => setShowTrashDialog(true)}
-              className={cn(
-                'group flex items-center justify-center px-3 h-[42px] rounded-xl',
-                'relative',
-                'text-muted-foreground hover:text-destructive',
-                // Subtle background that turns red on hover
-                'bg-accent/20 hover:bg-destructive/15',
-                'border border-border/40 hover:border-destructive/40',
-                'shadow-sm hover:shadow-md hover:shadow-destructive/10',
-                'transition-all duration-200 ease-out',
-                'hover:scale-[1.02] active:scale-[0.97]'
-              )}
-              title="Recycle Bin"
-              data-testid="trash-button"
-            >
-              <Recycle className="size-4 shrink-0 transition-transform duration-200 group-hover:rotate-12" />
-              {trashedProjects.length > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 z-10 flex items-center justify-center min-w-4 h-4 px-1 text-[9px] font-bold rounded-full bg-red-500 text-white shadow-md ring-1 ring-red-600/50">
-                  {trashedProjects.length > 9 ? '9+' : trashedProjects.length}
-                </span>
-              )}
-            </button>
-          </div>
+          <ProjectActions
+            setShowNewProjectModal={setShowNewProjectModal}
+            handleOpenFolder={handleOpenFolder}
+            setShowTrashDialog={setShowTrashDialog}
+            trashedProjects={trashedProjects}
+            shortcuts={{ openProject: shortcuts.openProject }}
+          />
         )}
 
         {/* Project Selector with Cycle Buttons */}
@@ -1163,123 +977,13 @@ export function Sidebar() {
           </div>
         )}
 
-        {/* Nav Items - Scrollable */}
-        <nav className={cn('flex-1 overflow-y-auto px-3 pb-2', sidebarOpen ? 'mt-5' : 'mt1')}>
-          {!currentProject && sidebarOpen ? (
-            // Placeholder when no project is selected (only in expanded state)
-            <div className="flex items-center justify-center h-full px-4">
-              <p className="text-muted-foreground text-sm text-center">
-                <span className="hidden lg:block">Select or create a project above</span>
-              </p>
-            </div>
-          ) : currentProject ? (
-            // Navigation sections when project is selected
-            navSections.map((section, sectionIdx) => (
-              <div key={sectionIdx} className={sectionIdx > 0 && sidebarOpen ? 'mt-6' : ''}>
-                {/* Section Label */}
-                {section.label && sidebarOpen && (
-                  <div className="hidden lg:block px-3 mb-2">
-                    <span className="text-[10px] font-semibold text-muted-foreground/70 uppercase tracking-widest">
-                      {section.label}
-                    </span>
-                  </div>
-                )}
-                {section.label && !sidebarOpen && (
-                  <div className="h-px bg-border/30 mx-2 my-1.5"></div>
-                )}
-
-                {/* Nav Items */}
-                <div className="space-y-1.5">
-                  {section.items.map((item) => {
-                    const isActive = isActiveRoute(item.id);
-                    const Icon = item.icon;
-
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => navigate({ to: `/${item.id}` as const })}
-                        className={cn(
-                          'group flex items-center w-full px-3 py-2.5 rounded-xl relative overflow-hidden titlebar-no-drag',
-                          'transition-all duration-200 ease-out',
-                          isActive
-                            ? [
-                                // Active: Premium gradient with glow
-                                'bg-gradient-to-r from-brand-500/20 via-brand-500/15 to-brand-600/10',
-                                'text-foreground font-medium',
-                                'border border-brand-500/30',
-                                'shadow-md shadow-brand-500/10',
-                              ]
-                            : [
-                                // Inactive: Subtle hover state
-                                'text-muted-foreground hover:text-foreground',
-                                'hover:bg-accent/50',
-                                'border border-transparent hover:border-border/40',
-                                'hover:shadow-sm',
-                              ],
-                          sidebarOpen ? 'justify-start' : 'justify-center',
-                          'hover:scale-[1.02] active:scale-[0.97]'
-                        )}
-                        title={!sidebarOpen ? item.label : undefined}
-                        data-testid={`nav-${item.id}`}
-                      >
-                        <Icon
-                          className={cn(
-                            'w-[18px] h-[18px] shrink-0 transition-all duration-200',
-                            isActive
-                              ? 'text-brand-500 drop-shadow-sm'
-                              : 'group-hover:text-brand-400 group-hover:scale-110'
-                          )}
-                        />
-                        <span
-                          className={cn(
-                            'ml-3 font-medium text-sm flex-1 text-left',
-                            sidebarOpen ? 'hidden lg:block' : 'hidden'
-                          )}
-                        >
-                          {item.label}
-                        </span>
-                        {item.shortcut && sidebarOpen && (
-                          <span
-                            className={cn(
-                              'hidden lg:flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-mono rounded-md transition-all duration-200',
-                              isActive
-                                ? 'bg-brand-500/20 text-brand-400'
-                                : 'bg-muted text-muted-foreground group-hover:bg-accent'
-                            )}
-                            data-testid={`shortcut-${item.id}`}
-                          >
-                            {formatShortcut(item.shortcut, true)}
-                          </span>
-                        )}
-                        {/* Tooltip for collapsed state */}
-                        {!sidebarOpen && (
-                          <span
-                            className={cn(
-                              'absolute left-full ml-3 px-2.5 py-1.5 rounded-lg',
-                              'bg-popover text-popover-foreground text-xs font-medium',
-                              'border border-border shadow-lg',
-                              'opacity-0 group-hover:opacity-100',
-                              'transition-all duration-200 whitespace-nowrap z-50',
-                              'translate-x-1 group-hover:translate-x-0'
-                            )}
-                            data-testid={`sidebar-tooltip-${item.label.toLowerCase()}`}
-                          >
-                            {item.label}
-                            {item.shortcut && (
-                              <span className="ml-2 px-1.5 py-0.5 bg-muted rounded text-[10px] font-mono text-muted-foreground">
-                                {formatShortcut(item.shortcut, true)}
-                              </span>
-                            )}
-                          </span>
-                        )}
-                      </button>
-                    );
-                  })}
-                </div>
-              </div>
-            ))
-          ) : null}
-        </nav>
+        <SidebarNavigation
+          currentProject={currentProject}
+          sidebarOpen={sidebarOpen}
+          navSections={navSections}
+          isActiveRoute={isActiveRoute}
+          navigate={navigate}
+        />
       </div>
 
       {/* Bottom Section - Running Agents / Bug Report / Settings */}
