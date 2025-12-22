@@ -929,7 +929,8 @@
 }
 
 @keyframes edge-glow {
-  0%, 100% {
+  0%,
+  100% {
     filter: drop-shadow(0 0 2px var(--status-in-progress));
   }
   50% {
@@ -954,7 +955,8 @@
 
 /* Node animations */
 @keyframes pulse-subtle {
-  0%, 100% {
+  0%,
+  100% {
     box-shadow: 0 0 0 0 var(--status-in-progress);
   }
   50% {
@@ -1007,6 +1009,14 @@
 
 .graph-canvas .react-flow__handle-right {
   right: -6px;
+}
+
+/* Node base styling - override React Flow defaults */
+.graph-canvas .react-flow__node {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  padding: 0 !important;
 }
 
 /* Selection styles */
