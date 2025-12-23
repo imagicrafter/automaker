@@ -4,8 +4,20 @@ import { Feature } from '@/store/app-store';
 export interface GraphFilterState {
   searchQuery: string;
   selectedCategories: string[];
+  selectedStatuses: string[];
   isNegativeFilter: boolean;
 }
+
+// Available status filter values
+export const STATUS_FILTER_OPTIONS = [
+  'running',
+  'paused',
+  'backlog',
+  'waiting_approval',
+  'verified',
+] as const;
+
+export type StatusFilterValue = (typeof STATUS_FILTER_OPTIONS)[number];
 
 export interface GraphFilterResult {
   matchedNodeIds: Set<string>;
@@ -29,7 +41,10 @@ function getAncestors(
   const feature = featureMap.get(featureId);
   if (!feature?.dependencies) return;
 
-  for (const depId of feature.dependencies) {
+  const deps = feature.dependencies as string[] | undefined;
+  if (!deps) return;
+
+  for (const depId of deps) {
     if (featureMap.has(depId)) {
       getAncestors(depId, featureMap, visited);
     }
@@ -44,7 +59,8 @@ function getDescendants(featureId: string, features: Feature[], visited: Set<str
   visited.add(featureId);
 
   for (const feature of features) {
-    if (feature.dependencies?.includes(featureId)) {
+    const deps = feature.dependencies as string[] | undefined;
+    if (deps?.includes(featureId)) {
       getDescendants(feature.id, features, visited);
     }
   }
@@ -58,9 +74,10 @@ function getHighlightedEdges(highlightedNodeIds: Set<string>, features: Feature[
 
   for (const feature of features) {
     if (!highlightedNodeIds.has(feature.id)) continue;
-    if (!feature.dependencies) continue;
+    const deps = feature.dependencies as string[] | undefined;
+    if (!deps) continue;
 
-    for (const depId of feature.dependencies) {
+    for (const depId of deps) {
       if (highlightedNodeIds.has(depId)) {
         edges.add(`${depId}->${feature.id}`);
       }
@@ -71,13 +88,24 @@ function getHighlightedEdges(highlightedNodeIds: Set<string>, features: Feature[
 }
 
 /**
- * Hook to calculate graph filter results based on search query, categories, and filter mode
+ * Gets the effective status of a feature (accounting for running state)
+ */
+function getEffectiveStatus(feature: Feature, runningAutoTasks: string[]): StatusFilterValue {
+  if (feature.status === 'in_progress') {
+    return runningAutoTasks.includes(feature.id) ? 'running' : 'paused';
+  }
+  return feature.status as StatusFilterValue;
+}
+
+/**
+ * Hook to calculate graph filter results based on search query, categories, statuses, and filter mode
  */
 export function useGraphFilter(
   features: Feature[],
-  filterState: GraphFilterState
+  filterState: GraphFilterState,
+  runningAutoTasks: string[] = []
 ): GraphFilterResult {
-  const { searchQuery, selectedCategories, isNegativeFilter } = filterState;
+  const { searchQuery, selectedCategories, selectedStatuses, isNegativeFilter } = filterState;
 
   return useMemo(() => {
     // Extract all unique categories
@@ -88,7 +116,9 @@ export function useGraphFilter(
     const normalizedQuery = searchQuery.toLowerCase().trim();
     const hasSearchQuery = normalizedQuery.length > 0;
     const hasCategoryFilter = selectedCategories.length > 0;
-    const hasActiveFilter = hasSearchQuery || hasCategoryFilter || isNegativeFilter;
+    const hasStatusFilter = selectedStatuses.length > 0;
+    const hasActiveFilter =
+      hasSearchQuery || hasCategoryFilter || hasStatusFilter || isNegativeFilter;
 
     // If no filters active, return empty sets (show all nodes normally)
     if (!hasActiveFilter) {
@@ -108,6 +138,7 @@ export function useGraphFilter(
     for (const feature of features) {
       let matchesSearch = true;
       let matchesCategory = true;
+      let matchesStatus = true;
 
       // Check search query match (title or description)
       if (hasSearchQuery) {
@@ -121,8 +152,14 @@ export function useGraphFilter(
         matchesCategory = selectedCategories.includes(feature.category);
       }
 
-      // Both conditions must be true for a match
-      if (matchesSearch && matchesCategory) {
+      // Check status match
+      if (hasStatusFilter) {
+        const effectiveStatus = getEffectiveStatus(feature, runningAutoTasks);
+        matchesStatus = selectedStatuses.includes(effectiveStatus);
+      }
+
+      // All conditions must be true for a match
+      if (matchesSearch && matchesCategory && matchesStatus) {
         matchedNodeIds.add(feature.id);
       }
     }
@@ -161,5 +198,12 @@ export function useGraphFilter(
       availableCategories,
       hasActiveFilter: true,
     };
-  }, [features, searchQuery, selectedCategories, isNegativeFilter]);
+  }, [
+    features,
+    searchQuery,
+    selectedCategories,
+    selectedStatuses,
+    isNegativeFilter,
+    runningAutoTasks,
+  ]);
 }

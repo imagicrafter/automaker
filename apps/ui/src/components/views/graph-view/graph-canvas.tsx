@@ -66,19 +66,21 @@ function GraphCanvasInner({
   const [isLocked, setIsLocked] = useState(false);
   const [layoutDirection, setLayoutDirection] = useState<'LR' | 'TB'>('LR');
 
-  // Filter state (category and negative toggle are local to graph view)
+  // Filter state (category, status, and negative toggle are local to graph view)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<string[]>([]);
   const [isNegativeFilter, setIsNegativeFilter] = useState(false);
 
   // Combined filter state
   const filterState: GraphFilterState = {
     searchQuery,
     selectedCategories,
+    selectedStatuses,
     isNegativeFilter,
   };
 
   // Calculate filter results
-  const filterResult = useGraphFilter(features, filterState);
+  const filterResult = useGraphFilter(features, filterState, runningAutoTasks);
 
   // Transform features to nodes and edges with filter results
   const { nodes: initialNodes, edges: initialEdges } = useGraphNodes({
@@ -117,6 +119,7 @@ function GraphCanvasInner({
   const handleClearFilters = useCallback(() => {
     onSearchQueryChange('');
     setSelectedCategories([]);
+    setSelectedStatuses([]);
     setIsNegativeFilter(false);
   }, [onSearchQueryChange]);
 
@@ -195,6 +198,7 @@ function GraphCanvasInner({
           hasActiveFilter={filterResult.hasActiveFilter}
           onSearchQueryChange={onSearchQueryChange}
           onCategoriesChange={setSelectedCategories}
+          onStatusesChange={setSelectedStatuses}
           onNegativeFilterChange={setIsNegativeFilter}
           onClearFilters={handleClearFilters}
         />
