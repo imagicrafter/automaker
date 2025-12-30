@@ -11,6 +11,7 @@
 
 import { ProviderFactory } from '../providers/provider-factory.js';
 import type { ExecuteOptions, Feature, ModelProvider } from '@automaker/types';
+import { DEFAULT_PHASE_MODELS } from '@automaker/types';
 import {
   buildPromptWithImages,
   isAbortError,
@@ -1140,8 +1141,13 @@ Address the follow-up instructions above. Review the previous work and make the 
 Format your response as a structured markdown document.`;
 
     try {
-      // Use default Claude model for analysis (can be overridden in the future)
-      const analysisModel = resolveModelString(undefined, DEFAULT_MODELS.claude);
+      // Get model from phase settings
+      const settings = await this.settingsService?.getGlobalSettings();
+      const projectAnalysisModel =
+        settings?.phaseModels?.projectAnalysisModel || DEFAULT_PHASE_MODELS.projectAnalysisModel;
+      const analysisModel = resolveModelString(projectAnalysisModel, DEFAULT_MODELS.claude);
+      this.logger.info('[AutoMode] Using model for project analysis:', analysisModel);
+
       const provider = ProviderFactory.getProviderForModel(analysisModel);
 
       // Load autoLoadClaudeMd setting
