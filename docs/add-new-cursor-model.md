@@ -46,7 +46,7 @@ export const CURSOR_MODEL_MAP: Record<CursorModelId, CursorModelConfig> = {
     label: 'Your New Model', // Display name in UI
     description: 'Description of the model capabilities',
     hasThinking: false, // true if model has built-in reasoning
-    tier: 'pro', // 'free' or 'pro'
+    supportsVision: false, // true if model supports image inputs (currently all false)
   },
 };
 ```
@@ -72,13 +72,13 @@ The new model will automatically appear in:
 
 ## Model Config Fields
 
-| Field         | Type              | Description                                        |
-| ------------- | ----------------- | -------------------------------------------------- |
-| `id`          | `string`          | Must match the key in the map and the CLI model ID |
-| `label`       | `string`          | Human-readable name shown in UI                    |
-| `description` | `string`          | Tooltip/help text explaining the model             |
-| `hasThinking` | `boolean`         | Set `true` if model has built-in extended thinking |
-| `tier`        | `'free' \| 'pro'` | Subscription tier required to use this model       |
+| Field            | Type      | Description                                                     |
+| ---------------- | --------- | --------------------------------------------------------------- |
+| `id`             | `string`  | Must match the key in the map and the CLI model ID              |
+| `label`          | `string`  | Human-readable name shown in UI                                 |
+| `description`    | `string`  | Tooltip/help text explaining the model                          |
+| `hasThinking`    | `boolean` | Set `true` if model has built-in extended thinking              |
+| `supportsVision` | `boolean` | Set `true` if model supports image inputs (all false currently) |
 
 ---
 
@@ -126,7 +126,7 @@ export const CURSOR_MODEL_MAP: Record<CursorModelId, CursorModelConfig> = {
     label: 'Cursor Turbo',
     description: 'Optimized for speed with good quality balance',
     hasThinking: false,
-    tier: 'pro',
+    supportsVision: false,
   },
 };
 ```
@@ -151,4 +151,4 @@ After rebuilding, "Cursor Turbo" will appear in all model selection UIs.
 - The model ID must exactly match what Cursor CLI expects
 - Check Cursor's documentation for available models: https://cursor.com/docs
 - Models with `hasThinking: true` display a "Thinking" badge in the UI
-- The `tier` field is informational and shown as a badge in selection UI
+- Currently all models have `supportsVision: false` as Cursor CLI doesn't pass images to models

@@ -614,6 +614,16 @@ export class CursorProvider extends CliProvider {
       );
     }
 
+    // MCP servers are not yet supported by Cursor CLI - log warning but continue
+    if (options.mcpServers && Object.keys(options.mcpServers).length > 0) {
+      const serverCount = Object.keys(options.mcpServers).length;
+      logger.warn(
+        `MCP servers configured (${serverCount}) but not yet supported by Cursor CLI in AutoMaker. ` +
+          `MCP support for Cursor will be added in a future release. ` +
+          `The configured MCP servers will be ignored for this execution.`
+      );
+    }
+
     // Extract prompt text to pass via stdin (avoids shell escaping issues)
     const promptText = this.extractPromptText(options);
 
@@ -643,7 +653,8 @@ export class CursorProvider extends CliProvider {
 
         // Log raw event for debugging
         if (debugRawEvents) {
-          logger.info(`[RAW EVENT] type=${event.type} subtype=${(event as any).subtype || 'none'}`);
+          const subtype = 'subtype' in event ? (event.subtype as string) : 'none';
+          logger.info(`[RAW EVENT] type=${event.type} subtype=${subtype}`);
           if (event.type === 'tool_call') {
             const toolEvent = event as CursorToolCallEvent;
             const tc = toolEvent.tool_call;
@@ -950,6 +961,14 @@ export class CursorProvider extends CliProvider {
   }
 
   /**
+   * Get the detected CLI path (public accessor for status endpoints)
+   */
+  getCliPath(): string | null {
+    this.ensureCliDetected();
+    return this.cliPath;
+  }
+
+  /**
    * Get available Cursor models
    */
   getAvailableModels(): ModelDefinition[] {
@@ -960,7 +979,7 @@ export class CursorProvider extends CliProvider {
       provider: 'cursor',
       description: config.description,
       supportsTools: true,
-      supportsVision: false,
+      supportsVision: config.supportsVision,
     }));
   }
 

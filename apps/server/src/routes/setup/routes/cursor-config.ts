@@ -14,6 +14,7 @@
  */
 
 import type { Request, Response } from 'express';
+import path from 'path';
 import { CursorConfigManager } from '../../../providers/cursor-config-manager.js';
 import {
   CURSOR_MODEL_MAP,
@@ -38,6 +39,27 @@ import {
 import { getErrorMessage, logError } from '../common.js';
 
 /**
+ * Validate that a project path is safe (no path traversal)
+ * @throws Error if path contains traversal sequences
+ */
+function validateProjectPath(projectPath: string): void {
+  // Resolve to absolute path and check for traversal
+  const resolved = path.resolve(projectPath);
+  const normalized = path.normalize(projectPath);
+
+  // Check for obvious traversal attempts
+  if (normalized.includes('..') || projectPath.includes('..')) {
+    throw new Error('Invalid project path: path traversal not allowed');
+  }
+
+  // Ensure the resolved path doesn't escape intended boundaries
+  // by checking if it starts with the normalized path components
+  if (!resolved.startsWith(path.resolve(normalized))) {
+    throw new Error('Invalid project path: path traversal detected');
+  }
+}
+
+/**
  * Creates handler for GET /api/setup/cursor-config
  * Returns current Cursor configuration and available models
  */
@@ -53,6 +75,9 @@ export function createGetCursorConfigHandler() {
         });
         return;
       }
+
+      // Validate path to prevent traversal attacks
+      validateProjectPath(projectPath);
 
       const configManager = new CursorConfigManager(projectPath);
 
@@ -87,6 +112,9 @@ export function createSetCursorDefaultModelHandler() {
         });
         return;
       }
+
+      // Validate path to prevent traversal attacks
+      validateProjectPath(projectPath);
 
       if (!model || !(model in CURSOR_MODEL_MAP)) {
         res.status(400).json({
@@ -126,6 +154,9 @@ export function createSetCursorModelsHandler() {
         });
         return;
       }
+
+      // Validate path to prevent traversal attacks
+      validateProjectPath(projectPath);
 
       if (!Array.isArray(models)) {
         res.status(400).json({
@@ -172,6 +203,11 @@ export function createGetCursorPermissionsHandler() {
   return async (req: Request, res: Response): Promise<void> => {
     try {
       const projectPath = req.query.projectPath as string | undefined;
+
+      // Validate path if provided
+      if (projectPath) {
+        validateProjectPath(projectPath);
+      }
 
       // Get global config
       const globalConfig = await readGlobalConfig();
@@ -238,6 +274,8 @@ export function createApplyPermissionProfileHandler() {
           });
           return;
         }
+        // Validate path to prevent traversal attacks
+        validateProjectPath(projectPath);
         await applyProfileToProject(projectPath, profileId);
       } else {
         await applyProfileGlobally(profileId);
@@ -278,6 +316,9 @@ export function createSetCustomPermissionsHandler() {
         });
         return;
       }
+
+      // Validate path to prevent traversal attacks
+      validateProjectPath(projectPath);
 
       if (!permissions || !Array.isArray(permissions.allow) || !Array.isArray(permissions.deny)) {
         res.status(400).json({
@@ -323,6 +364,9 @@ export function createDeleteProjectPermissionsHandler() {
         });
         return;
       }
+
+      // Validate path to prevent traversal attacks
+      validateProjectPath(projectPath);
 
       await deleteProjectConfig(projectPath);
 

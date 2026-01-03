@@ -71,7 +71,7 @@ export function validateWorkingDirectory(cwd: string): void {
  * - iCloud Drive: ~/Library/Mobile Documents/
  * - Box: ~/Library/CloudStorage/Box-*
  *
- * @see https://github.com/anthropics/claude-code/issues/XXX (TODO: file upstream issue)
+ * Note: This is a known limitation when using cloud storage paths.
  */
 
 /**

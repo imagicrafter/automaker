@@ -24,10 +24,8 @@ export function createCursorStatusHandler() {
         provider.checkAuth(),
       ]);
 
-      // Get CLI path from provider (using type assertion since cliPath is private)
-      const cliPath = installed
-        ? (provider as unknown as { cliPath: string | null }).cliPath
-        : null;
+      // Get CLI path from provider using public accessor
+      const cliPath = installed ? provider.getCliPath() : null;
 
       res.json({
         success: true,
