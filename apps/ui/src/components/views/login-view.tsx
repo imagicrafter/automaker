@@ -125,13 +125,24 @@ async function checkAuthStatusSafe(): Promise<{ authenticated: boolean }> {
  */
 async function checkServerAndSession(
   dispatch: React.Dispatch<Action>,
-  setAuthState: (state: { isAuthenticated: boolean; authChecked: boolean }) => void
+  setAuthState: (state: { isAuthenticated: boolean; authChecked: boolean }) => void,
+  signal?: AbortSignal
 ): Promise<void> {
   for (let attempt = 1; attempt <= MAX_RETRIES; attempt++) {
+    // Return early if the component has unmounted
+    if (signal?.aborted) {
+      return;
+    }
+
     dispatch({ type: 'SERVER_CHECK_RETRY', attempt });
 
     try {
       const result = await checkAuthStatusSafe();
+
+      // Return early if the component has unmounted
+      if (signal?.aborted) {
+        return;
+      }
 
       if (result.authenticated) {
         // Server is reachable and we're authenticated
@@ -148,10 +159,13 @@ async function checkServerAndSession(
       console.debug(`Server check attempt ${attempt}/${MAX_RETRIES} failed:`, error);
 
       if (attempt === MAX_RETRIES) {
-        dispatch({
-          type: 'SERVER_ERROR',
-          message: 'Unable to connect to server. Please check that the server is running.',
-        });
+        // Return early if the component has unmounted
+        if (!signal?.aborted) {
+          dispatch({
+            type: 'SERVER_ERROR',
+            message: 'Unable to connect to server. Please check that the server is running.',
+          });
+        }
         return;
       }
 
@@ -225,7 +239,12 @@ export function LoginView() {
     if (initialCheckDone.current) return;
     initialCheckDone.current = true;
 
-    checkServerAndSession(dispatch, setAuthState);
+    const controller = new AbortController();
+    checkServerAndSession(dispatch, setAuthState, controller.signal);
+
+    return () => {
+      controller.abort();
+    };
   }, [setAuthState]);
 
   // When we enter checking_setup phase, check setup status
@@ -255,7 +274,8 @@ export function LoginView() {
   const handleRetry = () => {
     initialCheckDone.current = false;
     dispatch({ type: 'RETRY_SERVER_CHECK' });
-    checkServerAndSession(dispatch, setAuthState);
+    const controller = new AbortController();
+    checkServerAndSession(dispatch, setAuthState, controller.signal);
   };
 
   // =============================================================================

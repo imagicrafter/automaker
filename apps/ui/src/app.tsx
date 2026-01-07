@@ -3,7 +3,6 @@ import { RouterProvider } from '@tanstack/react-router';
 import { createLogger } from '@automaker/utils/logger';
 import { router } from './utils/router';
 import { SplashScreen } from './components/splash-screen';
-import { LoadingState } from './components/ui/loading-state';
 import { useSettingsSync } from './hooks/use-settings-sync';
 import { useCursorStatusInit } from './hooks/use-cursor-status-init';
 import './styles/global.css';

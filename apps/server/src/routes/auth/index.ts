@@ -233,10 +233,7 @@ export function createAuthRoutes(): Router {
     // Using res.cookie() with maxAge: 0 is more reliable than clearCookie()
     // in cross-origin development environments
     res.cookie(cookieName, '', {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
-      path: '/',
+      ...getSessionCookieOptions(),
       maxAge: 0,
       expires: new Date(0),
     });
