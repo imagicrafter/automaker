@@ -486,6 +486,8 @@ export interface GlobalSettings {
   // Claude Agent SDK Settings
   /** Auto-load CLAUDE.md files using SDK's settingSources option */
   autoLoadClaudeMd?: boolean;
+  /** Skip the sandbox environment warning dialog on startup */
+  skipSandboxWarning?: boolean;
 
   // MCP Server Configuration
   /** List of configured MCP servers for agent use */

@@ -479,6 +479,7 @@ function hydrateStoreFromSettings(settings: GlobalSettings): void {
     enabledCursorModels: settings.enabledCursorModels ?? current.enabledCursorModels,
     cursorDefaultModel: settings.cursorDefaultModel ?? 'auto',
     autoLoadClaudeMd: settings.autoLoadClaudeMd ?? false,
+    skipSandboxWarning: settings.skipSandboxWarning ?? false,
     keyboardShortcuts: {
       ...current.keyboardShortcuts,
       ...(settings.keyboardShortcuts as unknown as Partial<typeof current.keyboardShortcuts>),
@@ -535,6 +536,7 @@ function buildSettingsUpdateFromStore(): Record<string, unknown> {
     validationModel: state.validationModel,
     phaseModels: state.phaseModels,
     autoLoadClaudeMd: state.autoLoadClaudeMd,
+    skipSandboxWarning: state.skipSandboxWarning,
     keyboardShortcuts: state.keyboardShortcuts,
     aiProfiles: state.aiProfiles,
     mcpServers: state.mcpServers,

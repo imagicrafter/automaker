@@ -52,6 +52,8 @@ export function SettingsView() {
     setAutoLoadClaudeMd,
     promptCustomization,
     setPromptCustomization,
+    skipSandboxWarning,
+    setSkipSandboxWarning,
   } = useAppStore();
 
   // Convert electron Project to settings-view Project type
@@ -149,6 +151,8 @@ export function SettingsView() {
           <DangerZoneSection
             project={settingsProject}
             onDeleteClick={() => setShowDeleteDialog(true)}
+            skipSandboxWarning={skipSandboxWarning}
+            onResetSandboxWarning={() => setSkipSandboxWarning(false)}
           />
         );
       default:

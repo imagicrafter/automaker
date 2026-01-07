@@ -511,6 +511,7 @@ export interface AppState {
 
   // Claude Agent SDK Settings
   autoLoadClaudeMd: boolean; // Auto-load CLAUDE.md files using SDK's settingSources option
+  skipSandboxWarning: boolean; // Skip the sandbox environment warning dialog on startup
 
   // MCP Servers
   mcpServers: MCPServerConfig[]; // List of configured MCP servers for agent use
@@ -816,6 +817,7 @@ export interface AppActions {
 
   // Claude Agent SDK Settings actions
   setAutoLoadClaudeMd: (enabled: boolean) => Promise<void>;
+  setSkipSandboxWarning: (skip: boolean) => Promise<void>;
 
   // Prompt Customization actions
   setPromptCustomization: (customization: PromptCustomization) => Promise<void>;
@@ -1036,6 +1038,7 @@ const initialState: AppState = {
   enabledCursorModels: getAllCursorModelIds(), // All Cursor models enabled by default
   cursorDefaultModel: 'auto', // Default to auto selection
   autoLoadClaudeMd: false, // Default to disabled (user must opt-in)
+  skipSandboxWarning: false, // Default to disabled (show sandbox warning dialog)
   mcpServers: [], // No MCP servers configured by default
   promptCustomization: {}, // Empty by default - all prompts use built-in defaults
   aiProfiles: DEFAULT_AI_PROFILES,
@@ -1732,6 +1735,17 @@ export const useAppStore = create<AppState & AppActions>()((set, get) => ({
     if (!ok) {
       logger.error('Failed to sync autoLoadClaudeMd setting to server - reverting');
       set({ autoLoadClaudeMd: previous });
+    }
+  },
+  setSkipSandboxWarning: async (skip) => {
+    const previous = get().skipSandboxWarning;
+    set({ skipSandboxWarning: skip });
+    // Sync to server settings file
+    const { syncSettingsToServer } = await import('@/hooks/use-settings-migration');
+    const ok = await syncSettingsToServer();
+    if (!ok) {
+      logger.error('Failed to sync skipSandboxWarning setting to server - reverting');
+      set({ skipSandboxWarning: previous });
     }
   },
   // Prompt Customization actions

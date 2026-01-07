@@ -16,19 +16,28 @@ import {
   initApiKey,
   isElectronMode,
   verifySession,
+  checkSandboxEnvironment,
   getServerUrlSync,
   checkExternalServerMode,
   isExternalServerMode,
 } from '@/lib/http-api-client';
 import { Toaster } from 'sonner';
 import { ThemeOption, themeOptions } from '@/config/theme-options';
+import { SandboxRiskDialog } from '@/components/dialogs/sandbox-risk-dialog';
+import { SandboxRejectionScreen } from '@/components/dialogs/sandbox-rejection-screen';
 import { LoadingState } from '@/components/ui/loading-state';
 
 const logger = createLogger('RootLayout');
 
 function RootLayoutContent() {
   const location = useLocation();
-  const { setIpcConnected, currentProject, getEffectiveTheme } = useAppStore();
+  const {
+    setIpcConnected,
+    currentProject,
+    getEffectiveTheme,
+    skipSandboxWarning,
+    setSkipSandboxWarning,
+  } = useAppStore();
   const { setupComplete } = useSetupStore();
   const navigate = useNavigate();
   const [isMounted, setIsMounted] = useState(false);
@@ -43,6 +52,12 @@ function RootLayoutContent() {
 
   const isSetupRoute = location.pathname === '/setup';
   const isLoginRoute = location.pathname === '/login';
+
+  // Sandbox environment check state
+  type SandboxStatus = 'pending' | 'containerized' | 'needs-confirmation' | 'denied' | 'confirmed';
+  // Always start from pending on a fresh page load so the user sees the prompt
+  // each time the app is launched/refreshed (unless running in a container).
+  const [sandboxStatus, setSandboxStatus] = useState<SandboxStatus>('pending');
 
   // Hidden streamer panel - opens with "\" key
   const handleStreamerPanelShortcut = useCallback((event: KeyboardEvent) => {
@@ -88,6 +103,73 @@ function RootLayoutContent() {
 
   useEffect(() => {
     setIsMounted(true);
+  }, []);
+
+  // Check sandbox environment on mount
+  useEffect(() => {
+    // Skip if already decided
+    if (sandboxStatus !== 'pending') {
+      return;
+    }
+
+    const checkSandbox = async () => {
+      try {
+        const result = await checkSandboxEnvironment();
+
+        if (result.isContainerized) {
+          // Running in a container, no warning needed
+          setSandboxStatus('containerized');
+        } else if (skipSandboxWarning) {
+          // User opted to skip the warning, auto-confirm
+          setSandboxStatus('confirmed');
+        } else {
+          // Not containerized, show warning dialog
+          setSandboxStatus('needs-confirmation');
+        }
+      } catch (error) {
+        logger.error('Failed to check environment:', error);
+        // On error, assume not containerized and show warning
+        if (skipSandboxWarning) {
+          setSandboxStatus('confirmed');
+        } else {
+          setSandboxStatus('needs-confirmation');
+        }
+      }
+    };
+
+    checkSandbox();
+  }, [sandboxStatus, skipSandboxWarning]);
+
+  // Handle sandbox risk confirmation
+  const handleSandboxConfirm = useCallback(
+    (skipInFuture: boolean) => {
+      if (skipInFuture) {
+        setSkipSandboxWarning(true);
+      }
+      setSandboxStatus('confirmed');
+    },
+    [setSkipSandboxWarning]
+  );
+
+  // Handle sandbox risk denial
+  const handleSandboxDeny = useCallback(async () => {
+    if (isElectron()) {
+      // In Electron mode, quit the application
+      // Use window.electronAPI directly since getElectronAPI() returns the HTTP client
+      try {
+        const electronAPI = window.electronAPI;
+        if (electronAPI?.quit) {
+          await electronAPI.quit();
+        } else {
+          logger.error('quit() not available on electronAPI');
+        }
+      } catch (error) {
+        logger.error('Failed to quit app:', error);
+      }
+    } else {
+      // In web mode, show rejection screen
+      setSandboxStatus('denied');
+    }
   }, []);
 
   // Ref to prevent concurrent auth checks from running
@@ -234,12 +316,28 @@ function RootLayoutContent() {
     }
   }, [deferredTheme]);
 
+  // Show sandbox rejection screen if user denied the risk warning
+  if (sandboxStatus === 'denied') {
+    return <SandboxRejectionScreen />;
+  }
+
+  // Show sandbox risk dialog if not containerized and user hasn't confirmed
+  // The dialog is rendered as an overlay while the main content is blocked
+  const showSandboxDialog = sandboxStatus === 'needs-confirmation';
+
   // Show login page (full screen, no sidebar)
   if (isLoginRoute) {
     return (
-      <main className="h-screen overflow-hidden" data-testid="app-container">
-        <Outlet />
-      </main>
+      <>
+        <main className="h-screen overflow-hidden" data-testid="app-container">
+          <Outlet />
+        </main>
+        <SandboxRiskDialog
+          open={showSandboxDialog}
+          onConfirm={handleSandboxConfirm}
+          onDeny={handleSandboxDeny}
+        />
+      </>
     );
   }
 
@@ -275,30 +373,37 @@ function RootLayoutContent() {
   }
 
   return (
-    <main className="flex h-screen overflow-hidden" data-testid="app-container">
-      {/* Full-width titlebar drag region for Electron window dragging */}
-      {isElectron() && (
+    <>
+      <main className="flex h-screen overflow-hidden" data-testid="app-container">
+        {/* Full-width titlebar drag region for Electron window dragging */}
+        {isElectron() && (
+          <div
+            className={`fixed top-0 left-0 right-0 h-6 titlebar-drag-region z-40 pointer-events-none ${isMac ? 'pl-20' : ''}`}
+            aria-hidden="true"
+          />
+        )}
+        <Sidebar />
         <div
-          className={`fixed top-0 left-0 right-0 h-6 titlebar-drag-region z-40 pointer-events-none ${isMac ? 'pl-20' : ''}`}
-          aria-hidden="true"
-        />
-      )}
-      <Sidebar />
-      <div
-        className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
-        style={{ marginRight: streamerPanelOpen ? '250px' : '0' }}
-      >
-        <Outlet />
-      </div>
+          className="flex-1 flex flex-col overflow-hidden transition-all duration-300"
+          style={{ marginRight: streamerPanelOpen ? '250px' : '0' }}
+        >
+          <Outlet />
+        </div>
 
-      {/* Hidden streamer panel - opens with "\" key, pushes content */}
-      <div
-        className={`fixed top-0 right-0 h-full w-[250px] bg-background border-l border-border transition-transform duration-300 ${
-          streamerPanelOpen ? 'translate-x-0' : 'translate-x-full'
-        }`}
+        {/* Hidden streamer panel - opens with "\" key, pushes content */}
+        <div
+          className={`fixed top-0 right-0 h-full w-[250px] bg-background border-l border-border transition-transform duration-300 ${
+            streamerPanelOpen ? 'translate-x-0' : 'translate-x-full'
+          }`}
+        />
+        <Toaster richColors position="bottom-right" />
+      </main>
+      <SandboxRiskDialog
+        open={showSandboxDialog}
+        onConfirm={handleSandboxConfirm}
+        onDeny={handleSandboxDeny}
       />
-      <Toaster richColors position="bottom-right" />
-    </main>
+    </>
   );
 }
 

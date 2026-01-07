@@ -1,14 +1,21 @@
 import { Button } from '@/components/ui/button';
-import { Trash2, Folder, AlertTriangle } from 'lucide-react';
+import { Trash2, Folder, AlertTriangle, Shield, RotateCcw } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import type { Project } from '../shared/types';
 
 interface DangerZoneSectionProps {
   project: Project | null;
   onDeleteClick: () => void;
+  skipSandboxWarning: boolean;
+  onResetSandboxWarning: () => void;
 }
 
-export function DangerZoneSection({ project, onDeleteClick }: DangerZoneSectionProps) {
+export function DangerZoneSection({
+  project,
+  onDeleteClick,
+  skipSandboxWarning,
+  onResetSandboxWarning,
+}: DangerZoneSectionProps) {
   return (
     <div
       className={cn(
@@ -30,6 +37,36 @@ export function DangerZoneSection({ project, onDeleteClick }: DangerZoneSectionP
         </p>
       </div>
       <div className="p-6 space-y-4">
+        {/* Sandbox Warning Reset */}
+        {skipSandboxWarning && (
+          <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-destructive/5 border border-destructive/10">
+            <div className="flex items-center gap-3.5 min-w-0">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-destructive/15 to-destructive/10 border border-destructive/20 flex items-center justify-center shrink-0">
+                <Shield className="w-5 h-5 text-destructive" />
+              </div>
+              <div className="min-w-0">
+                <p className="font-medium text-foreground">Sandbox Warning Disabled</p>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">
+                  The sandbox environment warning is hidden on startup
+                </p>
+              </div>
+            </div>
+            <Button
+              variant="outline"
+              onClick={onResetSandboxWarning}
+              data-testid="reset-sandbox-warning-button"
+              className={cn(
+                'shrink-0 gap-2',
+                'transition-all duration-200 ease-out',
+                'hover:scale-[1.02] active:scale-[0.98]'
+              )}
+            >
+              <RotateCcw className="w-4 h-4" />
+              Reset
+            </Button>
+          </div>
+        )}
+
         {/* Project Delete */}
         {project && (
           <div className="flex items-center justify-between gap-4 p-4 rounded-xl bg-destructive/5 border border-destructive/10">
@@ -60,7 +97,7 @@ export function DangerZoneSection({ project, onDeleteClick }: DangerZoneSectionP
         )}
 
         {/* Empty state when nothing to show */}
-        {!project && (
+        {!skipSandboxWarning && !project && (
           <p className="text-sm text-muted-foreground/60 text-center py-4">
             No danger zone actions available.
           </p>
